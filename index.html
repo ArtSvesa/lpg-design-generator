@@ -521,7 +521,7 @@ const SECTIONS=[
 {key:'hydraulic',title:'5. AFT Arrow Hydraulic Results — Pipe Section Table',open:false,custom:'hydraulic'},
 {key:'mains',title:'6. Distribution Mains Design',open:false,custom:'mains'},
 {key:'services',title:'7. Service Line Design',open:false,custom:'services'},
-{key:'prs',title:'8. Pressure Regulating Station (PRS)',open:false,fields:[['prsPresent','PRS Present?','Yes','select',['Yes','No']],['prsGroup','PRS Group','N/A','select',['N/A','Group 1','Group 2','Group 3']],['continuity','Continuity Required?','No','select',['No','Yes']],['upstreamGt16','PRS Upstream Pressure >16 bar?','No','select',['No','Yes']],['prsPidProvided','PRS P&ID / Line Diagram Provided?','No','select',['No','Yes']],['prsSetpointSchedule','PRS Setpoint Schedule Provided?','No','select',['No','Yes']],['prs1stStageHeading','═══ 1st Stage Sizing & Tolerance Checks','','heading'],['prs_1stRegModel','1st Stage Regulator Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_1stRegModelCustom','1st Stage Regulator Custom Name','','text'],['prs_1stRegAC','1st Stage Regulator Accuracy Class (AC), %','10','number'],['prs_1stRegSG','1st Stage Regulator Lock-up Group (SG), %','20','number'],['prs_1stOpsoModel','1st Stage OPSO Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_1stOpsoModelCustom','1st Stage OPSO Custom Name','','text'],['prs_1stOpsoAG','1st Stage OPSO Accuracy Group (AG), %','10','number'],['prs_1stRegCapacity','1st Stage Regulator Maximum Flow Capacity, kg/h','','number'],['prs2ndStageHeading','═══ 2nd Stage Sizing & Tolerance Checks','','heading'],['prs_2ndRegModel','2nd Stage Regulator Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_2ndRegModelCustom','2nd Stage Regulator Custom Name','','text'],['prs_2ndRegAC','2nd Stage Regulator Accuracy Class (AC), %','10','number'],['prs_2ndRegSG','2nd Stage Regulator Lock-up Group (SG), %','20','number'],['prs_2ndOpsoModel','2nd Stage OPSO Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_2ndOpsoModelCustom','2nd Stage OPSO Custom Name','','text'],['prs_2ndOpsoAG','2nd Stage OPSO Accuracy Group (AG), %','10','number'],['prs_2ndRegCapacity','2nd Stage Regulator Maximum Flow Capacity, kg/h','','number'],['prsNotes','PRS Design Notes','','textarea'],['prsStreamSetpointsHeading','═══ Stream Setpoints (mbar)','','heading'],['prsA_1stReg','Stream A — 1st Stage Regulator Setpoint, mbar','','number'],['prsA_1stMonitor','Stream A — 1st Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsA_1stOpso','Stream A — 1st Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsA_1stOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (based on EN 12279 Table 1)'],['prsA_2ndReg','Stream A — 2nd Stage Regulator Setpoint, mbar','','number'],['prsA_2ndMonitor','Stream A — 2nd Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsA_2ndOpso','Stream A — 2nd Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsA_2ndOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (based on EN 12279 Table 1)'],['prsB_1stReg','Stream B — 1st Stage Regulator Setpoint, mbar','','number'],['prsB_1stMonitor','Stream B — 1st Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsB_1stOpso','Stream B — 1st Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsB_1stOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (based on EN 12279 Table 1)'],['prsB_2ndReg','Stream B — 2nd Stage Regulator Setpoint, mbar','','number'],['prsB_2ndMonitor','Stream B — 2nd Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsB_2ndOpso','Stream B — 2nd Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsB_2ndOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (based on EN 12279 Table 1)']]},
+{key:'prs',title:'8. Pressure Regulating Station (PRS)',open:false,fields:[['prsPresent','PRS Present?','Yes','select',['Yes','No']],['prsGroup','PRS Group','N/A','select',['N/A','Group 1: Single stream (1 Active + 1 OPSO)','Group 2: Twin regulator (Active + Monitor + OPSO)','Group 3: Twin stream (2 Active + 2 OPSO)'],[],'Group 1: Single stream (1 Active + 1 OPSO). No continuity. Group 2: Twin regulator (Active + Monitor + OPSO). Monitor maintains supply on active failure. Group 3: Twin stream (two parallel streams, each with Active + OPSO). Full redundancy.'],['continuity','Continuity Required?','No','select',['No','Yes']],['upstreamGt16','PRS Upstream Pressure >16 bar?','No','select',['No','Yes']],['prsPidProvided','PRS P&ID / Line Diagram Provided?','No','select',['No','Yes']],['prsSetpointSchedule','PRS Setpoint Schedule Provided?','No','select',['No','Yes']],['prs1stStageHeading','═══ 1st Stage Sizing & Tolerance Checks','','heading'],['prs_1stRegModel','1st Stage Regulator Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_1stRegModelCustom','1st Stage Regulator Custom Name','','text'],['prs_1stRegAC','1st Stage Regulator Accuracy Class (AC), %','10','number'],['prs_1stRegSG','1st Stage Regulator Lock-up Group (SG), %','20','number'],['prs_1stOpsoModel','1st Stage OPSO Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_1stOpsoModelCustom','1st Stage OPSO Custom Name','','text'],['prs_1stOpsoAG','1st Stage OPSO Accuracy Group (AG), %','10','number'],['prs_1stRegCapacity','1st Stage Regulator Maximum Flow Capacity, kg/h','','number'],['prs2ndStageHeading','═══ 2nd Stage Sizing & Tolerance Checks','','heading'],['prs_2ndRegModel','2nd Stage Regulator Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_2ndRegModelCustom','2nd Stage Regulator Custom Name','','text'],['prs_2ndRegAC','2nd Stage Regulator Accuracy Class (AC), %','10','number'],['prs_2ndRegSG','2nd Stage Regulator Lock-up Group (SG), %','20','number'],['prs_2ndOpsoModel','2nd Stage OPSO Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_2ndOpsoModelCustom','2nd Stage OPSO Custom Name','','text'],['prs_2ndOpsoAG','2nd Stage OPSO Accuracy Group (AG), %','10','number'],['prs_2ndRegCapacity','2nd Stage Regulator Maximum Flow Capacity, kg/h','','number'],['prsNotes','PRS Design Notes','','textarea'],['prsStreamSetpointsHeading','═══ Stream Setpoints (mbar)','','heading'],['prsA_1stReg','Stream A — 1st Stage Regulator Setpoint, mbar','','number'],['prsA_1stMonitor','Stream A — 1st Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsA_1stOpso','Stream A — 1st Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsA_1stOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (based on EN 12279 Table 1)'],['prsA_2ndReg','Stream A — 2nd Stage Regulator Setpoint, mbar','','number'],['prsA_2ndMonitor','Stream A — 2nd Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsA_2ndOpso','Stream A — 2nd Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsA_2ndOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (based on EN 12279 Table 1)'],['prsB_1stReg','Stream B — 1st Stage Regulator Setpoint, mbar','','number'],['prsB_1stMonitor','Stream B — 1st Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsB_1stOpso','Stream B — 1st Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsB_1stOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (based on EN 12279 Table 1)'],['prsB_2ndReg','Stream B — 2nd Stage Regulator Setpoint, mbar','','number'],['prsB_2ndMonitor','Stream B — 2nd Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsB_2ndOpso','Stream B — 2nd Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsB_2ndOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (based on EN 12279 Table 1)']]},
 {key:'pri',title:'9. Pressure Regulating Installation (PRI) — Optional',open:false,custom:'pri'},
 {key:'meter',title:'10. Meter and Meter Cabinet Design',open:false,fields:[['meterLocation','Meter Location','External cabinet','select',['External cabinet','Recessed external cabinet','Cavity wall cabinet','Internal - exception','N/A']],['mpRegMeter','MP Regulator Upstream of Meter?','No','select',['No','Yes']],['sepElecMeter','Gas Meter to Electricity Meter, mm','','number'],['sepDB','Gas Meter to Distribution Board, mm','','number'],['ventToOpening','MP Regulator Vent Tap to Building Opening, m','','number'],['ventToElectrical','MP Regulator Vent Tap to Electrical Equipment, m','','number'],['meterToFlue','Meter Box to Flue, mm','','number'],['meterImpactExposure','Cabinet exposed to vehicle movement / public access / impact risk?','No','select',['No','Yes','Review Required']],['meterImpactProtectionNotes','Meter cabinet protection measures / alternative protected location notes','','textarea'],['pointOfDeliveryDefined','Point of Delivery Defined?','No','select',['No','Yes']],['ownershipBoundaryDefined','Ownership Boundary Defined?','No','select',['No','Yes']],['meterNotes','Meter / Cabinet Notes','','textarea']]},
 {key:'hac',title:'11. HAC / ATEX Screening Record',open:false,custom:'hac'},
@@ -921,8 +921,8 @@ function prsSetpointsReportTable(){
   if(v('prsPresent')!=='Yes')return '';
   const sA_1=v('prsA_1stReg'),sA_1m=v('prsA_1stMonitor'),sA_1o=v('prsA_1stOpso'),sA_2=v('prsA_2ndReg'),sA_2m=v('prsA_2ndMonitor'),sA_2o=v('prsA_2ndOpso');
   const sB_1=v('prsB_1stReg'),sB_1m=v('prsB_1stMonitor'),sB_1o=v('prsB_1stOpso'),sB_2=v('prsB_2ndReg'),sB_2m=v('prsB_2ndMonitor'),sB_2o=v('prsB_2ndOpso');
-  const showStreamB=v('prsGroup')==='Group 3';
-  const show2ndStage=v('prsGroup')==='Group 3' || sA_2 || sB_2;
+  const showStreamB=v('prsGroup').startsWith('Group 3');
+  const show2ndStage=v('prsGroup').startsWith('Group 3') || sA_2 || sB_2;
 
   const getModelName = (modelId, customId) => v(modelId) === 'Custom / Manual' ? (v(customId) || '-') : (v(modelId) || '-');
   const m1 = getModelName('prs_1stRegModel', 'prs_1stRegModelCustom');
@@ -1197,12 +1197,12 @@ if(Scope.include('services')){
 } 
 if(Scope.include('prs')&&yn('prsPresent')){
     if(yn('upstreamGt16'))addRule(r,'PRS-16-01','PRS','Manual 12.5.5','PRS upstream pressure >16 bar',v('upstreamGt16'),'TA approval / additional protection','REVIEW REQUIRED','Technical Authority approval required.');
-    if(v('prsGroup')==='Group 1'&&yn('continuity'))addRule(r,'PRS-GRP-01','PRS','Manual 12.5','PRS group suitability','Group 1 + continuity required','Group 2/3 or justification','FAIL','Group 1 not suitable where continuity required.');
+    if(v('prsGroup').startsWith('Group 1')&&yn('continuity'))addRule(r,'PRS-GRP-01','PRS','Manual 12.5','PRS group suitability','Group 1 + continuity required','Group 2/3 or justification','FAIL','Group 1 not suitable where continuity required.');
 
     const sA_1=n('prsA_1stReg'),sA_1m=n('prsA_1stMonitor'),sA_1o=n('prsA_1stOpso'),sA_2=n('prsA_2ndReg'),sA_2m=n('prsA_2ndMonitor'),sA_2o=n('prsA_2ndOpso');
     const sB_1=n('prsB_1stReg'),sB_1m=n('prsB_1stMonitor'),sB_1o=n('prsB_1stOpso'),sB_2=n('prsB_2ndReg'),sB_2m=n('prsB_2ndMonitor'),sB_2o=n('prsB_2ndOpso');
     const grp = v('prsGroup');
-    const isGroup3 = grp === 'Group 3';
+    const isGroup3 = grp.startsWith('Group 3');
 
     // 1. PRS-SAFETY-01: Setpoint Hierarchy and Safety Tolerances (OPSO >= 1.1x Active, OPSO within EN 12279 Table 1 MIP limits, Monitor between Active & OPSO)
     const checkHierarchy = (act, mon, ops, acVal, sgVal, agVal) => {
@@ -1311,11 +1311,11 @@ if(Scope.include('prs')&&yn('prsPresent')){
 
     // 3. PRS-SETPOINT-01: Setpoints completeness check
     let setpointsMissing=[];
-    if (grp === 'Group 1' || grp === 'Group 2') {
+    if (grp.startsWith('Group 1') || grp.startsWith('Group 2')) {
       if(!sA_1)setpointsMissing.push('Stream A 1st Reg');
-      if(grp === 'Group 2' && !sA_1m)setpointsMissing.push('Stream A 1st Monitor');
+      if(grp.startsWith('Group 2') && !sA_1m)setpointsMissing.push('Stream A 1st Monitor');
       if(!sA_1o)setpointsMissing.push('Stream A 1st OPSO');
-    } else if (grp === 'Group 3') {
+    } else if (grp.startsWith('Group 3')) {
       if(!sA_1)setpointsMissing.push('Stream A 1st Reg');
       if(!sA_1o)setpointsMissing.push('Stream A 1st OPSO');
       if(!sA_2)setpointsMissing.push('Stream A 2nd Reg');
@@ -1373,7 +1373,7 @@ if(Scope.include('prs')&&yn('prsPresent')){
           toleranceMsg = 'Stream A and B tolerances compliant.';
         }
       }
-    } else if (grp === 'Group 1' || grp === 'Group 2') {
+    } else if (grp.startsWith('Group 1') || grp.startsWith('Group 2')) {
       if (sA_1 > 0 && sA_1o > 0) {
         hasSetpoints = true;
         const lu_a1 = sA_1 * (1 + (sg1 + ac1)/100);
@@ -1535,6 +1535,10 @@ const I18N={
   lang:'en',
   dict:{uk:{
   // Upgrades translations
+"Group 1: Single stream (1 Active + 1 OPSO). No continuity. Group 2: Twin regulator (Active + Monitor + OPSO). Monitor maintains supply on active failure. Group 3: Twin stream (two parallel streams, each with Active + OPSO). Full redundancy.": "Група 1: Однониткова схема (1 активний регулятор + 1 OPSO). Без резервування. Група 2: Двоступенева схема з монітором (1 активний + 1 монітор + 1 OPSO). Монітор підтримує постачання при відмові активного регулятора. Група 3: Двониткова паралельна схема (дві паралельні нитки, кожна з активним регулятором та OPSO). Повне резервування.",
+  "Group 1: Single stream (1 Active + 1 OPSO)": "Група 1: Однониткова схема (1 активний + 1 OPSO)",
+  "Group 2: Twin regulator (Active + Monitor + OPSO)": "Група 2: Дворегуляторна схема (Активний + Монітор + OPSO)",
+  "Group 3: Twin stream (2 Active + 2 OPSO)": "Група 3: Двониткова схема (2 активних + 2 OPSO)",
   "Regulator Model Selection": "Вибір моделі регулятора",
   "Custom Regulator Model Name": "Власна назва моделі регулятора",
   "Model / Equipment": "Модель / Обладнання",
@@ -2333,6 +2337,10 @@ const I18N={
     }
     root.querySelectorAll('[title]').forEach(el=>this.translateAttribute(el,'title'));
     root.querySelectorAll('[placeholder]').forEach(el=>this.translateAttribute(el,'placeholder'));
+    root.querySelectorAll('option').forEach(el=>{
+      if(el.__i18nOriginal===undefined)el.__i18nOriginal=el.textContent;
+      el.textContent=this.lang==='en'?el.__i18nOriginal:this.translateText(el.__i18nOriginal);
+    });
     document.documentElement.lang=this.lang==='uk'?'uk':'en';
     const sel=document.getElementById('uiLanguage');
     if(sel&&sel.value!==this.lang)sel.value=this.lang;
