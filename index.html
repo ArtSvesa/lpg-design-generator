@@ -1137,6 +1137,7 @@ function mtoCategorizedReportHtml(mto){
     'PIPEWORK':[],
     'FITTINGS':[],
     'METERS / REGULATORS':[],
+    'VENTILATION / CABINET ACCESSORIES':[],
     'SAFETY & PROTECTION':[],
     'UNASSIGNED / MISC':[]
   };
@@ -1151,6 +1152,8 @@ function mtoCategorizedReportHtml(mto){
       targetCat='PIPEWORK';
     }else if(catVal.includes('FITTING')||catVal.includes('JOINT')||catVal.includes('FLANGE')){
       targetCat='FITTINGS';
+    }else if(catVal.includes('VENT')||catVal.includes('GRILLE')||catVal.includes('LOUVRE')||catVal.includes('GRATE')||catVal.includes('ACCESSOR')){
+      targetCat='VENTILATION / CABINET ACCESSORIES';
     }else if(catVal.includes('METER')||catVal.includes('REGULATOR')||catVal.includes('PRS')||catVal.includes('PRI')){
       targetCat='METERS / REGULATORS';
     }else if(catVal.includes('SAFETY')||catVal.includes('PROTECTION')||catVal.includes('SIGN')||catVal.includes('BOLLARD')||catVal.includes('SLEEVE')){
@@ -1163,6 +1166,8 @@ function mtoCategorizedReportHtml(mto){
         targetCat='PIPEWORK';
       }else if(combined.includes('fitting')||combined.includes('flange')||combined.includes('pecat')||combined.includes('bend')||combined.includes('coupler')||combined.includes('tee')){
         targetCat='FITTINGS';
+      }else if(combined.includes('grille')||combined.includes('louvre')||combined.includes('louvred')||combined.includes('grate')||combined.includes('ventilation')||combined.includes(' vent')||combined.includes('mesh')||combined.includes('gauze')||combined.includes('air brick')||combined.includes('deburr')||combined.includes('primer')||combined.includes('touch-up')||combined.includes('zinc-rich')){
+        targetCat='VENTILATION / CABINET ACCESSORIES';
       }else if(combined.includes('meter')||combined.includes('regulator')||combined.includes('clesse')||combined.includes('jeavons')||combined.includes('fiorentini')){
         targetCat='METERS / REGULATORS';
       }else if(combined.includes('sign')||combined.includes('signage')||combined.includes('atex')||combined.includes('sleeve')||combined.includes('bollard')){
@@ -1173,7 +1178,7 @@ function mtoCategorizedReportHtml(mto){
   });
   let html='';
   const cols=REGISTERS.mto.cols;
-  const categoriesOrder=['VALVES','PIPEWORK','FITTINGS','METERS / REGULATORS','SAFETY & PROTECTION','UNASSIGNED / MISC'];
+  const categoriesOrder=['VALVES','PIPEWORK','FITTINGS','METERS / REGULATORS','VENTILATION / CABINET ACCESSORIES','SAFETY & PROTECTION','UNASSIGNED / MISC'];
   categoriesOrder.forEach(catName=>{
     const catRows=categories[catName];
     if(catRows.length>0){
@@ -2056,6 +2061,7 @@ const I18N={
   "PIPEWORK": "ТРУБОПРОВОДИ",
   "FITTINGS": "ФІТИНГИ ТА З'ЄДНАННЯ",
   "METERS / REGULATORS": "ЛІЧИЛЬНИКИ ТА РЕГУЛЯТОРИ",
+  "VENTILATION / CABINET ACCESSORIES": "ВЕНТИЛЯЦІЯ / АКСЕСУАРИ ШАФИ",
   "SAFETY & PROTECTION": "БЕЗПЕКА ТА ЗАХИСТ",
   "UNASSIGNED / MISC": "НЕКЛАСИФІКОВАНЕ / РІЗНЕ",
   
