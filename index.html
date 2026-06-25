@@ -534,12 +534,17 @@ function updatePrsRegulatorFields(forceCopy = false) {
   updateOpso('prs_2ndOpsoModel', 'prs_2ndOpsoModelCustom', 'prs_2ndOpsoAG');
 }
 
+/* MOP basis for PRS MIP limits (EN 12186 / manual): manual override if given, else upper end of regulation band = setpoint × (1+AC/100). MIP = band-multiplier × MOP (NOT × setpoint). */
+function prsMopBasis(act, acVal, mopOverride){const o=Number(mopOverride);if(o>0)return o;return (Number(act)||0)*(1+(Number(acVal)||0)/100);}
+function prsMipFromMop(mop){if(mop<=100)return 2.50*mop;if(mop<=2000)return 1.75*mop;if(mop<=5000)return 1.40*mop;return 1.30*mop;}
+function prsMipMult(mop){return mop<=100?'2.5':mop<=2000?'1.75':mop<=5000?'1.40':'1.30';}
 function updatePrsSetpointHints() {
-  const calcStage = (regId, acId, sgId, agId, hintId) => {
+  const calcStage = (regId, acId, sgId, agId, hintId, mopId) => {
     const regVal = n(regId);
     const acVal = n(acId);
     const sgVal = n(sgId);
     const agVal = n(agId);
+    const mopVal = n(mopId);
     const hintEl = $(hintId);
     if (!hintEl) return;
     if (regVal <= 0) {
@@ -550,17 +555,10 @@ function updatePrsSetpointHints() {
       return;
     }
     
-    // 1. Calculate MIP limit based on EN 12186 Table 1 (PRS / regulating stations)
-    let mip = 0;
-    if (regVal <= 100) {
-      mip = Math.min(150, 2.50 * regVal);
-    } else if (regVal <= 2000) {
-      mip = 1.75 * regVal;
-    } else if (regVal <= 5000) {
-      mip = 1.40 * regVal;
-    } else {
-      mip = 1.30 * regVal;
-    }
+    // 1. MIP from MOP per EN 12186 / manual pressure-relationship table (MIP = mult × MOP, NOT × setpoint)
+    const mop = prsMopBasis(regVal, acVal, mopVal);
+    const mipMult = prsMipMult(mop);
+    const mip = prsMipFromMop(mop);
     
     // 2. OPSO Max = MIP / (1 + AG/100)
     const opsoMax = mip / (1 + agVal / 100);
@@ -581,16 +579,18 @@ function updatePrsSetpointHints() {
     if (opsoMin < opsoMax) {
       hintEl.textContent = Math.round(opsoMin) + ' - ' + Math.round(opsoMax);
       hintEl.dataset.fxtip = (typeof I18N!=='undefined'&&I18N.lang==='uk')
-        ? `Формула розрахунку OPSO (мбар) за EN 12186:\n` +
-        `1) MIP (макс. випадковий тиск) = ${Math.round(mip)} мбар (за EN 12186: ${regVal <= 100 ? '2.5 * Pset' : regVal <= 2000 ? '1.75 * Pset' : regVal <= 5000 ? '1.40 * Pset' : '1.30 * Pset'})\n` +
+        ? `Розрахунок OPSO (мбар) — MIP від MOP (EN 12186 / мануал):\n` +
+        `0) MOP = ${mopVal>0 ? Math.round(mop)+' (задано вручну)' : 'Pset × (1 + AC/100) = '+regVal+' × (1 + '+acVal+'/100) = '+Math.round(mop)} мбар\n` +
+        `1) MIP = ${mipMult} × MOP = ${mipMult} × ${Math.round(mop)} = ${Math.round(mip)} мбар\n` +
         `2) OPSO Max = MIP / (1 + AG/100) = ${Math.round(mip)} / (1 + ${agVal}/100) = ${Math.round(opsoMax)} мбар\n` +
-        `3) OPSO Min = max( 1.1 * Pset, P_lockup / (1 - AG/100) ) = max( ${Math.round(1.1 * regVal)}, ${Math.round(pLockup)} / (1 - ${agVal}/100) ) = ${Math.round(opsoMin)} мбар\n` +
-        `(Для поточних значень: Pset = ${regVal} мбар, AC = ${acVal}%, SG = ${sgVal}%, AG = ${agVal}%)`
-        : `OPSO setpoint calculation (mbar) per EN 12186:\n` +
-        `1) MIP (max incidental pressure) = ${Math.round(mip)} mbar (per EN 12186: ${regVal <= 100 ? '2.5 * Pset' : regVal <= 2000 ? '1.75 * Pset' : regVal <= 5000 ? '1.40 * Pset' : '1.30 * Pset'})\n` +
+        `3) OPSO Min = max( 1.1 × Pset, P_lockup / (1 - AG/100) ) = max( ${Math.round(1.1 * regVal)}, ${Math.round(pLockup)} / (1 - ${agVal}/100) ) = ${Math.round(opsoMin)} мбар\n` +
+        `(Pset = ${regVal} мбар, AC = ${acVal}%, SG = ${sgVal}%, AG = ${agVal}%)`
+        : `OPSO calculation (mbar) — MIP from MOP (EN 12186 / manual):\n` +
+        `0) MOP = ${mopVal>0 ? Math.round(mop)+' (manual override)' : 'Pset × (1 + AC/100) = '+regVal+' × (1 + '+acVal+'/100) = '+Math.round(mop)} mbar\n` +
+        `1) MIP = ${mipMult} × MOP = ${mipMult} × ${Math.round(mop)} = ${Math.round(mip)} mbar\n` +
         `2) OPSO Max = MIP / (1 + AG/100) = ${Math.round(mip)} / (1 + ${agVal}/100) = ${Math.round(opsoMax)} mbar\n` +
-        `3) OPSO Min = max( 1.1 * Pset, P_lockup / (1 - AG/100) ) = max( ${Math.round(1.1 * regVal)}, ${Math.round(pLockup)} / (1 - ${agVal}/100) ) = ${Math.round(opsoMin)} mbar\n` +
-        `(For current values: Pset = ${regVal} mbar, AC = ${acVal}%, SG = ${sgVal}%, AG = ${agVal}%)`;
+        `3) OPSO Min = max( 1.1 × Pset, P_lockup / (1 - AG/100) ) = max( ${Math.round(1.1 * regVal)}, ${Math.round(pLockup)} / (1 - ${agVal}/100) ) = ${Math.round(opsoMin)} mbar\n` +
+        `(Pset = ${regVal} mbar, AC = ${acVal}%, SG = ${sgVal}%, AG = ${agVal}%)`;
     } else {
       hintEl.textContent = 'Min (' + Math.round(opsoMin) + ') > Max (' + Math.round(opsoMax) + ')';
       hintEl.dataset.fxtip = (typeof I18N!=='undefined'&&I18N.lang==='uk')
@@ -599,10 +599,10 @@ function updatePrsSetpointHints() {
     }
   };
 
-  calcStage('prsA_1stReg', 'prs_1stRegAC', 'prs_1stRegSG', 'prs_1stOpsoAG', 'prsA_1stOpso_hint');
-  calcStage('prsA_2ndReg', 'prs_2ndRegAC', 'prs_2ndRegSG', 'prs_2ndOpsoAG', 'prsA_2ndOpso_hint');
-  calcStage('prsB_1stReg', 'prs_1stRegAC', 'prs_1stRegSG', 'prs_1stOpsoAG', 'prsB_1stOpso_hint');
-  calcStage('prsB_2ndReg', 'prs_2ndRegAC', 'prs_2ndRegSG', 'prs_2ndOpsoAG', 'prsB_2ndOpso_hint');
+  calcStage('prsA_1stReg', 'prs_1stRegAC', 'prs_1stRegSG', 'prs_1stOpsoAG', 'prsA_1stOpso_hint', 'prs_1stMop');
+  calcStage('prsA_2ndReg', 'prs_2ndRegAC', 'prs_2ndRegSG', 'prs_2ndOpsoAG', 'prsA_2ndOpso_hint', 'prs_2ndMop');
+  calcStage('prsB_1stReg', 'prs_1stRegAC', 'prs_1stRegSG', 'prs_1stOpsoAG', 'prsB_1stOpso_hint', 'prs_1stMop');
+  calcStage('prsB_2ndReg', 'prs_2ndRegAC', 'prs_2ndRegSG', 'prs_2ndOpsoAG', 'prsB_2ndOpso_hint', 'prs_2ndMop');
 }
 /* Instant custom tooltip for calculation hints (driven by data-fxtip attribute) */
 (function(){
@@ -623,7 +623,7 @@ function updatePrsVisibility(){
   const sh=(id,show)=>{const el=$('field_'+id);if(el)el.style.display=show?'':'none';};
   sh('prs2ndStageHeading',show2nd);
   ['prs_2ndRegModel','prs_2ndRegModelCustom','prs_2ndRegAC','prs_2ndRegSG',
-   'prs_2ndOpsoModel','prs_2ndOpsoModelCustom','prs_2ndOpsoAG','prs_2ndRegCapacity'
+   'prs_2ndOpsoModel','prs_2ndOpsoModelCustom','prs_2ndOpsoAG','prs_2ndRegCapacity','prs_2ndMop'
   ].forEach(id=>sf(id,show2nd));
   ['prsA_2ndReg','prsA_2ndMonitor','prsA_2ndOpso'].forEach(id=>sf(id,show2nd));
   ['prsB_1stReg','prsB_1stMonitor','prsB_1stOpso'].forEach(id=>sf(id,showB));
@@ -662,7 +662,7 @@ const SECTIONS=[
 {key:'hydraulic',title:'5. AFT Arrow Hydraulic Results — Pipe Section Table',open:false,custom:'hydraulic'},
 {key:'mains',title:'6. Distribution Mains Design',open:false,custom:'mains'},
 {key:'services',title:'7. Service Line Design',open:false,custom:'services'},
-{key:'prs',title:'8. Pressure Regulating Station (PRS)',open:false,fields:[['prsPresent','PRS Present?','Yes','select',['Yes','No']],['prsGroup','PRS Group','N/A','select',['N/A','Group 1: Single stream (1 Active + 1 OPSO)','Group 2: Twin regulator (Active + Monitor + OPSO)','Group 3: Twin stream (2 Active + 2 OPSO)']],['continuity','Continuity Required?','No','select',['No','Yes']],['upstreamGt16','PRS Upstream Pressure >16 bar?','No','select',['No','Yes']],['prsPidProvided','PRS P&ID / Line Diagram Provided?','No','select',['No','Yes']],['prsSetpointSchedule','PRS Setpoint Schedule Provided?','No','select',['No','Yes']],['prsActiveSetpointBar','PRS Active Regulator Setpoint, bar','','number'],['prsMonitorSetpointBar','PRS Monitor Regulator Setpoint, bar (if present)','','number'],['prsOpsoSetpointBar','PRS OPSO / Slam-Shut Setpoint, bar','','number'],['prs1stStageHeading','═══ 1st Stage Sizing & Tolerance Checks','','heading'],['prs_1stRegModel','1st Stage Regulator Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_1stRegModelCustom','1st Stage Regulator Custom Name','','text'],['prs_1stRegAC','1st Stage Regulator Accuracy Class (AC), %','10','number'],['prs_1stRegSG','1st Stage Regulator Lock-up Group (SG), %','20','number'],['prs_1stOpsoModel','1st Stage OPSO Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_1stOpsoModelCustom','1st Stage OPSO Custom Name','','text'],['prs_1stOpsoAG','1st Stage OPSO Accuracy Group (AG), %','10','number'],['prs_1stRegCapacity','1st Stage Regulator Maximum Flow Capacity, kg/h','','number'],['prs2ndStagePresent','2nd Stage Regulator / Step-down present?','No','select',['No','Yes']],['prs2ndStageHeading','═══ 2nd Stage Sizing & Tolerance Checks','','heading'],['prs_2ndRegModel','2nd Stage Regulator Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_2ndRegModelCustom','2nd Stage Regulator Custom Name','','text'],['prs_2ndRegAC','2nd Stage Regulator Accuracy Class (AC), %','10','number'],['prs_2ndRegSG','2nd Stage Regulator Lock-up Group (SG), %','20','number'],['prs_2ndOpsoModel','2nd Stage OPSO Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_2ndOpsoModelCustom','2nd Stage OPSO Custom Name','','text'],['prs_2ndOpsoAG','2nd Stage OPSO Accuracy Group (AG), %','10','number'],['prs_2ndRegCapacity','2nd Stage Regulator Maximum Flow Capacity, kg/h','','number'],['prsNotes','PRS Design Notes','','textarea'],['prsStreamSetpointsHeading','═══ Stream Setpoints (mbar)','','heading'],['prsA_1stReg','Stream A — 1st Stage Regulator Setpoint, mbar','','number'],['prsA_1stMonitor','Stream A — 1st Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsA_1stOpso','Stream A — 1st Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsA_1stOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (EN 12186 Table 1)'],['prsA_2ndReg','Stream A — 2nd Stage Regulator Setpoint, mbar','','number'],['prsA_2ndMonitor','Stream A — 2nd Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsA_2ndOpso','Stream A — 2nd Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsA_2ndOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (EN 12186 Table 1)'],['prsB_1stReg','Stream B — 1st Stage Regulator Setpoint, mbar','','number'],['prsB_1stMonitor','Stream B — 1st Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsB_1stOpso','Stream B — 1st Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsB_1stOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (EN 12186 Table 1)'],['prsB_2ndReg','Stream B — 2nd Stage Regulator Setpoint, mbar','','number'],['prsB_2ndMonitor','Stream B — 2nd Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsB_2ndOpso','Stream B — 2nd Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsB_2ndOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (EN 12186 Table 1)']]},
+{key:'prs',title:'8. Pressure Regulating Station (PRS)',open:false,fields:[['prsPresent','PRS Present?','Yes','select',['Yes','No']],['prsGroup','PRS Group','N/A','select',['N/A','Group 1: Single stream (1 Active + 1 OPSO)','Group 2: Twin regulator (Active + Monitor + OPSO)','Group 3: Twin stream (2 Active + 2 OPSO)']],['continuity','Continuity Required?','No','select',['No','Yes']],['upstreamGt16','PRS Upstream Pressure >16 bar?','No','select',['No','Yes']],['prsPidProvided','PRS P&ID / Line Diagram Provided?','No','select',['No','Yes']],['prsSetpointSchedule','PRS Setpoint Schedule Provided?','No','select',['No','Yes']],['prsActiveSetpointBar','PRS Active Regulator Setpoint, bar','','number'],['prsMonitorSetpointBar','PRS Monitor Regulator Setpoint, bar (if present)','','number'],['prsOpsoSetpointBar','PRS OPSO / Slam-Shut Setpoint, bar','','number'],['prs1stStageHeading','═══ 1st Stage Sizing & Tolerance Checks','','heading'],['prs_1stRegModel','1st Stage Regulator Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_1stRegModelCustom','1st Stage Regulator Custom Name','','text'],['prs_1stRegAC','1st Stage Regulator Accuracy Class (AC), %','10','number'],['prs_1stRegSG','1st Stage Regulator Lock-up Group (SG), %','20','number'],['prs_1stOpsoModel','1st Stage OPSO Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_1stOpsoModelCustom','1st Stage OPSO Custom Name','','text'],['prs_1stOpsoAG','1st Stage OPSO Accuracy Group (AG), %','10','number'],['prs_1stRegCapacity','1st Stage Regulator Maximum Flow Capacity, kg/h','','number'],['prs_1stMop','1st Stage MOP basis, mbar (blank = auto: setpoint × (1+AC/100))','','number'],['prs2ndStagePresent','2nd Stage Regulator / Step-down present?','No','select',['No','Yes']],['prs2ndStageHeading','═══ 2nd Stage Sizing & Tolerance Checks','','heading'],['prs_2ndRegModel','2nd Stage Regulator Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_2ndRegModelCustom','2nd Stage Regulator Custom Name','','text'],['prs_2ndRegAC','2nd Stage Regulator Accuracy Class (AC), %','10','number'],['prs_2ndRegSG','2nd Stage Regulator Lock-up Group (SG), %','20','number'],['prs_2ndOpsoModel','2nd Stage OPSO Model','Custom / Manual','select',REG_MODELS_OPTS],['prs_2ndOpsoModelCustom','2nd Stage OPSO Custom Name','','text'],['prs_2ndOpsoAG','2nd Stage OPSO Accuracy Group (AG), %','10','number'],['prs_2ndRegCapacity','2nd Stage Regulator Maximum Flow Capacity, kg/h','','number'],['prs_2ndMop','2nd Stage MOP basis, mbar (blank = auto)','','number'],['prsNotes','PRS Design Notes','','textarea'],['prsStreamSetpointsHeading','═══ Stream Setpoints (mbar)','','heading'],['prsA_1stReg','Stream A — 1st Stage Regulator Setpoint, mbar','','number'],['prsA_1stMonitor','Stream A — 1st Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsA_1stOpso','Stream A — 1st Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsA_1stOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (EN 12186 Table 1)'],['prsA_2ndReg','Stream A — 2nd Stage Regulator Setpoint, mbar','','number'],['prsA_2ndMonitor','Stream A — 2nd Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsA_2ndOpso','Stream A — 2nd Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsA_2ndOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (EN 12186 Table 1)'],['prsB_1stReg','Stream B — 1st Stage Regulator Setpoint, mbar','','number'],['prsB_1stMonitor','Stream B — 1st Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsB_1stOpso','Stream B — 1st Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsB_1stOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (EN 12186 Table 1)'],['prsB_2ndReg','Stream B — 2nd Stage Regulator Setpoint, mbar','','number'],['prsB_2ndMonitor','Stream B — 2nd Stage Monitor Setpoint, mbar (if fitted)','','number'],['prsB_2ndOpso','Stream B — 2nd Stage OPSO Setpoint, mbar','','number',[],'Recommended OPSO range: <span id="prsB_2ndOpso_hint" style="font-weight:bold;color:var(--blue);">-</span> mbar (EN 12186 Table 1)']]},
 {key:'pri',title:'9. Pressure Regulating Installation (PRI) — Optional',open:false,custom:'pri'},
 {key:'meter',title:'10. Meter and Meter Cabinet Design',open:false,custom:'meter'},
 {key:'hac',title:'11. HAC / ATEX Screening Record',open:false,custom:'hac'},
@@ -1607,7 +1607,7 @@ if(Scope.include('prs')&&yn('prsPresent')){
     const isGroup3 = grp.startsWith('Group 3');
 
     // 1. PRS-SAFETY-01: Setpoint Hierarchy and Safety Tolerances (OPSO >= 1.1x Active, OPSO within EN 12279 Table 1 MIP limits, Monitor between Active & OPSO)
-    const checkHierarchy = (act, mon, ops, acVal, sgVal, agVal) => {
+    const checkHierarchy = (act, mon, ops, acVal, sgVal, agVal, mopOverride) => {
       if (!act || !ops) return { status: 'REVIEW REQUIRED', details: 'Missing active or OPSO setpoint' };
       if (ops < act * 1.1) return { status: 'FAIL', details: 'OPSO setpoint is too low (must be ≥ 1.1× Active regulator setpoint)' };
       
@@ -1626,20 +1626,12 @@ if(Scope.include('prs')&&yn('prsPresent')){
         return { status: 'FAIL', details: 'Monitor setpoint must be strictly between Active regulator and OPSO setpoints' };
       }
       
-      let mip = 0;
-      if (act <= 100) {
-        mip = Math.min(150, 2.50 * act);
-      } else if (act <= 2000) {
-        mip = 1.75 * act;
-      } else if (act <= 5000) {
-        mip = 1.40 * act;
-      } else {
-        mip = 1.30 * act;
-      }
+      const mop = prsMopBasis(act, acVal, mopOverride);
+      const mip = prsMipFromMop(mop);
       
       const opsoMax = mip / (1 + agVal / 100);
       if (ops > opsoMax) {
-        return { status: 'FAIL', details: `OPSO setpoint (${ops} mbar) exceeds max allowed nominal limit (${Math.round(opsoMax)} mbar) based on EN 12279 Table 1 MIP limits (MIP limit: ${Math.round(mip)} mbar, AG: +${agVal}%)` };
+        return { status: 'FAIL', details: `OPSO setpoint (${ops} mbar) exceeds max allowed nominal limit (${Math.round(opsoMax)} mbar) based on EN 12186 / manual MIP limits (MOP: ${Math.round(mop)} mbar, MIP: ${Math.round(mip)} mbar, AG: +${agVal}%)` };
       }
       
       return { status: 'PASS', details: 'Setpoint hierarchy and safety limits verified.' };
@@ -1647,11 +1639,12 @@ if(Scope.include('prs')&&yn('prsPresent')){
 
     const ac_1 = n('prs_1stRegAC'), sg_1 = n('prs_1stRegSG'), ag_1 = n('prs_1stOpsoAG');
     const ac_2 = n('prs_2ndRegAC'), sg_2 = n('prs_2ndRegSG'), ag_2 = n('prs_2ndOpsoAG');
+    const mop_1 = n('prs_1stMop'), mop_2 = n('prs_2ndMop');
 
-    const rA1 = checkHierarchy(sA_1, sA_1m, sA_1o, ac_1, sg_1, ag_1);
-    const rA2 = checkHierarchy(sA_2, sA_2m, sA_2o, ac_2, sg_2, ag_2);
-    const rB1 = checkHierarchy(sB_1, sB_1m, sB_1o, ac_1, sg_1, ag_1);
-    const rB2 = checkHierarchy(sB_2, sB_2m, sB_2o, ac_2, sg_2, ag_2);
+    const rA1 = checkHierarchy(sA_1, sA_1m, sA_1o, ac_1, sg_1, ag_1, mop_1);
+    const rA2 = checkHierarchy(sA_2, sA_2m, sA_2o, ac_2, sg_2, ag_2, mop_2);
+    const rB1 = checkHierarchy(sB_1, sB_1m, sB_1o, ac_1, sg_1, ag_1, mop_1);
+    const rB2 = checkHierarchy(sB_2, sB_2m, sB_2o, ac_2, sg_2, ag_2, mop_2);
 
     let safetyVerdict = 'PASS';
     let safetyDetails = '';
